@@ -43,4 +43,5 @@ PY
 echo "Installed hook: $HOOK_DST"
 echo "Registered in:  $SETTINGS"
 echo "Counter file:   $CLAUDE_DIR/thanks-count.json (created on first thanks)"
+echo "Notes file:     $CLAUDE_DIR/thanks-notes.md (one line per thanks)"
 echo "Open a new Claude Code session for it to take effect."

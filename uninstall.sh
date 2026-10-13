@@ -30,4 +30,4 @@ PY
 fi
 
 rm -f "$CLAUDE_DIR/hooks/thanks_counter.py"
-echo "Removed the hook. Your count is still in $CLAUDE_DIR/thanks-count.json."
+echo "Removed the hook. Your count and notes are still in $CLAUDE_DIR/."

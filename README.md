@@ -1,8 +1,8 @@
 # claude-thanks-counter
 
 A tiny [Claude Code](https://claude.com/claude-code) hook that keeps a running,
-global count of how many times you've thanked Claude, and lets Claude answer a
-plain "ty" with one short line instead of a full wrap-up.
+global count of how many times you've thanked Claude, notes down why each time,
+and lets Claude answer a plain "ty" with one short line instead of a full wrap-up.
 
 ```
 you:    ty!
@@ -19,6 +19,9 @@ A `UserPromptSubmit` hook runs a small Python script on every message you send:
 | A thank-you plus a request (`thanks! now add tests`) | Counter +1. Claude gets a note with the total and handles the request as usual. |
 | Anything else, or `no thanks` / `thanks to…` | Nothing. The script prints no output, so these messages cost no extra tokens. |
 
+Links and file paths don't count, so pasting `github.com/you/claude-thanks-counter`
+isn't a thank-you.
+
 The script does the counting, not Claude, so the number never drifts. It lives
 in `~/.claude/thanks-count.json`, so it carries across every session, window
 and project:
@@ -30,6 +33,32 @@ and project:
   "last": "2026-10-09T09:12:45-07:00"
 }
 ```
+
+## Why you said thanks
+
+Each thank-you also adds one line to `~/.claude/thanks-notes.md` saying what it
+was for:
+
+```
+# Why I said thanks
+
+- #25 · 2026-10-12 20:45 · agentdeck — Setting up subscription-only Haiku calls for the thank-you notes.
+- #26 · 2026-10-12 21:02 · trip-studio — Fixing the shader preset that went black on reload.
+```
+
+The hook starts a detached worker, so your prompt isn't held up. The worker
+reads the last few messages of the chat and asks Haiku, through `claude -p`,
+for a one-sentence reason; the line usually lands a few seconds later. That
+call:
+
+- uses your claude.ai subscription: it drops `ANTHROPIC_API_KEY`,
+  `ANTHROPIC_AUTH_TOKEN` and the Bedrock/Vertex/Foundry switches, and skips your
+  settings files, so it can't pick up an API key;
+- isn't saved as a session, so it won't show up in your chat history;
+- doesn't run your hooks, so it can't count itself.
+
+If the call fails, the line still gets written, holding the start of your
+message marked `(no summary)`.
 
 ## Install
 
@@ -52,7 +81,8 @@ afterwards.
 ./uninstall.sh
 ```
 
-This removes the hook but keeps `thanks-count.json`, so your total survives.
+This removes the hook but keeps `thanks-count.json` and `thanks-notes.md`, so
+your total and notes survive.
 
 ## Customize
 
@@ -60,7 +90,9 @@ This removes the hook but keeps `thanks-count.json`, so your total survives.
   [`hooks/thanks_counter.py`](hooks/thanks_counter.py), then re-run
   `./install.sh`.
 - **Counter location**: set `THANKS_COUNTER_FILE` in the hook's environment.
-- **Reset**: delete `~/.claude/thanks-count.json`.
+- **Notes location**: set `THANKS_NOTES_FILE`.
+- **No notes**: set `THANKS_NOTES=0` to count only, with no Haiku calls.
+- **Reset**: delete `~/.claude/thanks-count.json` (and `thanks-notes.md`).
 
 ## Tests
 
