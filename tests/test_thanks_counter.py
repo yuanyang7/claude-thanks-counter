@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOOK = os.path.join(HERE, "..", "hooks", "thanks_counter.py")
@@ -87,7 +88,7 @@ class NotesTest(unittest.TestCase):
         thanks_counter.summarize = lambda prompt, path: "Fixing the login bug."
         try:
             with tempfile.TemporaryDirectory() as d:
-                notes = os.path.join(d, "notes.md")
+                notes = os.path.join(d, "new-dir", "notes.md")
                 thanks_counter.write_note(7, "ty", None, "/x/agentdeck", notes)
                 thanks_counter.write_note(8, "ty", None, "/x/agentdeck", notes)
                 with open(notes) as f:
@@ -100,11 +101,8 @@ class NotesTest(unittest.TestCase):
         self.assertTrue(lines[3].startswith("- #8 "))
 
     def test_subscription_env_drops_api_keys(self):
-        os.environ["ANTHROPIC_API_KEY"] = "sk-test"
-        try:
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-test"}):
             env = thanks_counter._subscription_env()
-        finally:
-            del os.environ["ANTHROPIC_API_KEY"]
         self.assertNotIn("ANTHROPIC_API_KEY", env)
         self.assertEqual(env[thanks_counter.SKIP_ENV], "1")
 

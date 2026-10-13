@@ -61,10 +61,10 @@ FILLER = {
     "啦", "了", "哈", "呀", "啊", "好的", "好", "太好了", "辛苦了", "棒",
 }
 
-# A thank-you that is actually a refusal or attribution, not gratitude.
 # Links and paths, e.g. github.com/you/claude-thanks-counter, aren't gratitude.
 LINKS_AND_PATHS = re.compile(r"\S*://\S*|www\.\S+|\S*[/\\]\S*")
 
+# A thank-you that is actually a refusal or attribution, not gratitude.
 NEGATIVE = re.compile(r"\bno,?\s+thanks?\b|\bthanks\s+to\b|\bthanks\s+but\s+no\b", re.I)
 
 MAX_STANDALONE_LEN = 80
@@ -189,6 +189,7 @@ def write_note(count, prompt, transcript_path, cwd, path=NOTES_FILE):
     reason = summarize(prompt, transcript_path)
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     project = os.path.basename(cwd.rstrip("/")) if cwd else "?"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "a+") as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         f.seek(0)
